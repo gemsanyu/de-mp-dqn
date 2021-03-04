@@ -394,8 +394,10 @@ class PDQNAgent(Agent):
         # self._add_sample(state, np.concatenate((all_actions.data, all_action_parameters.data)).ravel(), reward, next_state, terminal)
         self._add_sample(state, np.concatenate(([act],all_action_parameters)).ravel(), reward, next_state, np.concatenate(([next_action[0]],next_action[1])).ravel(), terminal=terminal)
         if self._step >= self.batch_size and self._step >= self.initial_memory_threshold:
-            self._optimize_td_loss()
+            Q_loss = self._optimize_td_loss()
             self.updates += 1
+            return Q_loss
+        return None
 
     def _add_sample(self, state, action, reward, next_state, next_action, terminal):
         assert len(action) == 1 + self.action_parameter_size
@@ -403,7 +405,7 @@ class PDQNAgent(Agent):
 
     def _optimize_td_loss(self):
         if self._step < self.batch_size or self._step < self.initial_memory_threshold:
-            return
+            return None
         # Sample a batch from replay memory
         states, actions, rewards, next_states, terminals = self.replay_memory.sample(self.batch_size, random_machine=self.np_random)
 
@@ -482,6 +484,7 @@ class PDQNAgent(Agent):
 
         soft_update_target_network(self.actor, self.actor_target, self.tau_actor)
         soft_update_target_network(self.actor_param, self.actor_param_target, self.tau_actor_param)
+        return Q_loss.item()
 
     def save_models(self, prefix):
         """

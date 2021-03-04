@@ -35,12 +35,12 @@ class ScaledStateWrapper(gym.ObservationWrapper):
             raise Exception("Unsupported observation space type: %s" % self.observation_space)
 
     def scale_state(self, state):
-        state = 2. * (state - self.low) / (self.high - self.low) - 1.
+        # state = 2. * (state - self.low) / (self.high - self.low) - 1.
         return state
 
     def _unscale_state(self, scaled_state):
-        state = (self.high - self.low) * (scaled_state + 1.) / 2. + self.low
-        return state
+        # state = (self.high - self.low) * (scaled_state + 1.) / 2. + self.low
+        return scaled_state
 
     def observation(self, obs):
         if self.compound:
