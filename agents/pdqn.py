@@ -12,6 +12,9 @@ from agents.memory.memory import Memory
 from agents.utils import soft_update_target_network, hard_update_target_network
 from agents.utils.noise import OrnsteinUhlenbeckActionNoise
 
+# DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+DEVICE = "cpu"
+
 
 class QActor(nn.Module):
 
@@ -170,7 +173,7 @@ class PDQNAgent(Agent):
                  weighted=False,
                  average=False,
                  random_weighted=False,
-                 device="cuda" if torch.cuda.is_available() else "cpu",
+                 device=DEVICE,
                  seed=None):
         super(PDQNAgent, self).__init__(observation_space, action_space)
         self.device = torch.device(device)
@@ -464,7 +467,7 @@ class PDQNAgent(Agent):
             Q_loss = torch.mean(Q_indexed)
         else:
             Q_loss = torch.mean(torch.sum(Q_val, 1))
-        self.actor.zero_grad()
+        self.actor.zero_grad(set_to_none=True)
         Q_loss.backward()
         from copy import deepcopy
         delta_a = deepcopy(action_params.grad.data)
@@ -475,7 +478,7 @@ class PDQNAgent(Agent):
             delta_a[:] = self._zero_index_gradients(delta_a, batch_action_indices=actions, inplace=True)
 
         out = -torch.mul(delta_a, action_params)
-        self.actor_param.zero_grad()
+        self.actor_param.zero_grad(set_to_none=True)
         out.backward(torch.ones(out.shape).to(self.device))
         if self.clip_grad > 0:
             torch.nn.utils.clip_grad_norm_(self.actor_param.parameters(), self.clip_grad)

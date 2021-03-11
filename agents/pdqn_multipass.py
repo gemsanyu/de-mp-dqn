@@ -7,8 +7,8 @@ import torch.optim as optim
 from agents.pdqn import PDQNAgent
 from agents.utils import hard_update_target_network
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+# device = torch.device("cuda" if torch.cuda.is_available() else  "cpu")
+device = torch.device("cpu")
 
 class MultiPassQActor(nn.Module):
 
@@ -45,6 +45,7 @@ class MultiPassQActor(nn.Module):
 
         self.offsets = self.action_parameter_size_list.cumsum()
         self.offsets = np.insert(self.offsets, 0, 0)
+        self.to(device)
 
     def forward(self, state, action_parameters):
         # implement forward
