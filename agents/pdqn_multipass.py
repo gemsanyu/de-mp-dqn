@@ -10,6 +10,12 @@ from agents.utils import hard_update_target_network
 # device = torch.device("cuda" if torch.cuda.is_available() else  "cpu")
 device = torch.device("cpu")
 
+def rowsToDiag(M):
+    b = torch.zeros((M.shape[0], M.shape[1], M.shape[1]), device=device)
+    diag = torch.arange(M.shape[1], device=device)
+    b[:, diag, diag] = M
+    return b
+
 class MultiPassQActor(nn.Module):
 
     def __init__(self, state_size, action_size, action_parameter_size_list, hidden_layers=(100,),
@@ -20,6 +26,7 @@ class MultiPassQActor(nn.Module):
         self.action_parameter_size_list = action_parameter_size_list
         self.action_parameter_size = sum(action_parameter_size_list)
         self.activation = activation
+        self.diag_idx = torch.arange(self.action_size, device=device)
 
         # create layers
         self.layers = nn.ModuleList()
@@ -51,33 +58,41 @@ class MultiPassQActor(nn.Module):
         # implement forward
         negative_slope = 0.01
 
-        Q = []
         # duplicate inputs so we can process all actions in a single pass
         batch_size = state.shape[0]
         # with torch.no_grad():
-        x = torch.cat((state, torch.zeros_like(action_parameters)), dim=1)
-        x = x.repeat(self.action_size, 1)
-        for a in range(self.action_size):
-            x[a*batch_size:(a+1)*batch_size, self.state_size + self.offsets[a]: self.state_size + self.offsets[a+1]] \
-                = action_parameters[:, self.offsets[a]:self.offsets[a+1]]
+        # x = torch.cat((state, torch.zeros_like(action_parameters)), dim=1)
+        # x = x.repeat(self.action_size, 1)
+        # for a in range(self.action_size):
+        #     x[a*batch_size:(a+1)*batch_size, self.state_size + self.offsets[a]: self.state_size + self.offsets[a+1]] \
+        #         = action_parameters[:, self.offsets[a]:self.offsets[a+1]]
+        repeated_states = torch.repeat_interleave(state, self.action_size, dim=0)
+        repeated_params = torch.zeros((batch_size, self.action_size, self.action_size), device=device)
+        repeated_params[:, self.diag_idx, self.diag_idx] = action_parameters
+        repeated_params = repeated_params.reshape(batch_size*self.action_size, self.action_size)
+        x = torch.cat((repeated_states, repeated_params), dim=1)
 
         num_layers = len(self.layers)
         for i in range(0, num_layers - 1):
-            if self.activation == "relu":
-                x = F.relu(self.layers[i](x))
-            elif self.activation == "leaky_relu":
-                x = F.leaky_relu(self.layers[i](x), negative_slope)
-            else:
-                raise ValueError("Unknown activation function "+str(self.activation))
+            # if self.activation == "relu":
+            x = F.relu(self.layers[i](x))
+            # elif self.activation == "leaky_relu":
+            #     x = F.leaky_relu(self.layers[i](x), negative_slope)
+            # else:
+            #     raise ValueError("Unknown activation function "+str(self.activation))
         Qall = self.layers[-1](x)
-
+        Q = []
         # extract Q-values for each action
         for a in range(self.action_size):
             Qa = Qall[a*batch_size:(a+1)*batch_size, a]
             if len(Qa.shape) == 1:
                 Qa = Qa.unsqueeze(1)
             Q.append(Qa)
+
         Q = torch.cat(Q, dim=1)
+        # Q = torch.zeros(state.shape[0],self.action_size)
+        # for a in range(state.shape[0]):
+        #     Q[a] = Qall.diag(-a*self.action_size)
         return Q
 
 

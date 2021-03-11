@@ -254,5 +254,5 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
 
 if __name__ == '__main__':
     T.set_flush_denormal(True)
-    T.set_num_threads(20)
+    T.set_num_threads(8)
     run()

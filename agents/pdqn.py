@@ -121,19 +121,19 @@ class ParamActor(nn.Module):
         negative_slope = 0.01
         num_hidden_layers = len(self.layers)
         for i in range(0, num_hidden_layers):
-            if self.activation == "relu":
-                x = F.relu(self.layers[i](x))
-            elif self.activation == "leaky_relu":
-                x = F.leaky_relu(self.layers[i](x), negative_slope)
-            else:
-                raise ValueError("Unknown activation function "+str(self.activation))
+            # if self.activation == "relu":
+            x = F.relu(self.layers[i](x))
+            # elif self.activation == "leaky_relu":
+            #     x = F.leaky_relu(self.layers[i](x), negative_slope)
+            # else:
+            #     raise ValueError("Unknown activation function "+str(self.activation))
         action_params = self.action_parameters_output_layer(x)
         action_params += self.action_parameters_passthrough_layer(state)
 
-        if self.squashing_function:
-            assert False  # scaling not implemented yet
-            action_params = action_params.tanh()
-            action_params = action_params * self.action_param_lim
+        # if self.squashing_function:
+        #     assert False  # scaling not implemented yet
+        #     action_params = action_params.tanh()
+        #     action_params = action_params * self.action_param_lim
         # action_params = action_params / torch.norm(action_params) ## REMOVE --- normalisation layer?? for pointmass
         return action_params
 
@@ -435,7 +435,7 @@ class PDQNAgent(Agent):
         y_expected = target
         loss_Q = self.loss_func(y_predicted, y_expected)
 
-        self.actor_optimiser.zero_grad()
+        self.actor_optimiser.zero_grad(set_to_none=True)
         loss_Q.backward()
         if self.clip_grad > 0:
             torch.nn.utils.clip_grad_norm_(self.actor.parameters(), self.clip_grad)
