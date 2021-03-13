@@ -61,16 +61,16 @@ class MultiPassQActor(nn.Module):
         # duplicate inputs so we can process all actions in a single pass
         batch_size = state.shape[0]
         # with torch.no_grad():
-        # x = torch.cat((state, torch.zeros_like(action_parameters)), dim=1)
-        # x = x.repeat(self.action_size, 1)
-        # for a in range(self.action_size):
-        #     x[a*batch_size:(a+1)*batch_size, self.state_size + self.offsets[a]: self.state_size + self.offsets[a+1]] \
-        #         = action_parameters[:, self.offsets[a]:self.offsets[a+1]]
-        repeated_states = torch.repeat_interleave(state, self.action_size, dim=0)
-        repeated_params = torch.zeros((batch_size, self.action_size, self.action_size), device=device)
-        repeated_params[:, self.diag_idx, self.diag_idx] = action_parameters
-        repeated_params = repeated_params.reshape(batch_size*self.action_size, self.action_size)
-        x = torch.cat((repeated_states, repeated_params), dim=1)
+        x = torch.cat((state, torch.zeros_like(action_parameters)), dim=1)
+        x = x.repeat(self.action_size, 1)
+        for a in range(self.action_size):
+            x[a*batch_size:(a+1)*batch_size, self.state_size + self.offsets[a]: self.state_size + self.offsets[a+1]] \
+                = action_parameters[:, self.offsets[a]:self.offsets[a+1]]
+        # repeated_states = torch.repeat_interleave(state, self.action_size, dim=0)
+        # repeated_params = torch.zeros((batch_size, self.action_size, self.action_size), device=device)
+        # repeated_params[:, self.diag_idx, self.diag_idx] = action_parameters
+        # repeated_params = repeated_params.reshape(batch_size*self.action_size, self.action_size)
+        # x = torch.cat((repeated_states, repeated_params), dim=1)
 
         num_layers = len(self.layers)
         for i in range(0, num_layers - 1):
