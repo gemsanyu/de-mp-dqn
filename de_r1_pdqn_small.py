@@ -13,7 +13,6 @@ import numpy as np
 from common.wrappers import ScaledStateWrapper, ScaledParameterisedActionWrapper
 from common.de_domain import DEFlattenedActionWrapper
 from de_train import DEEnv
-
 def pad_action(act, act_param):
     params = [np.zeros((1,), dtype=np.float32), np.zeros((1,), dtype=np.float32),
               np.zeros((1,), dtype=np.float32), np.zeros((1,), dtype=np.float32)]
@@ -89,7 +88,7 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
 
     # Tensorboard
     title = title+"_small"
-    writer = SummaryWriter("runs/"+title+reward_strategy)
+    writer = SummaryWriter("runs/"+title+reward_strategy+"C")
 
     if save_freq > 0 and save_dir:
         save_dir = os.path.join(save_dir, title + reward_strategy + "{}".format(str(seed)))
@@ -254,4 +253,6 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
 
 
 if __name__ == '__main__':
+    T.set_flush_denormal(True)
+    T.set_num_threads(8)
     run()
