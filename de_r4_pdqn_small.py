@@ -71,7 +71,7 @@ def evaluate(env, agent, episodes=1000):
 @click.option('--random-weighted', default=False, help='Randomly weighted loss function.', type=bool)
 @click.option('--zero-index-gradients', default=False, help="Whether to zero all gradients for action-parameters not corresponding to the chosen action.", type=bool)
 @click.option('--action-input-layer', default=0, help='Which layer to input action parameters.', type=int)
-@click.option('--layers', default='[128,128]', help='Duplicate action-parameter inputs.', cls=ClickPythonLiteralOption)
+@click.option('--layers', default='[100,100]', help='Duplicate action-parameter inputs.', cls=ClickPythonLiteralOption)
 @click.option('--save-freq', default=10, help='How often to save models (0 = never).', type=int)
 @click.option('--save-dir', default="results/platform", help='Output directory.', type=str)
 @click.option('--render-freq', default=100, help='How often to render / save frames of an episode.', type=int)
@@ -88,7 +88,7 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
 
     # Tensorboard
     title = title+"_small"
-    writer = SummaryWriter("runs/"+title+reward_strategy)
+    writer = SummaryWriter("runs/"+title+reward_strategy+"C")
 
     if save_freq > 0 and save_dir:
         save_dir = os.path.join(save_dir, title + reward_strategy + "{}".format(str(seed)))
