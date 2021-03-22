@@ -63,6 +63,7 @@ def run(seed, episodes, batch_size, gamma, inverting_gradients, initial_memory_t
 
     if save_freq > 0 and save_dir:
         save_dir = os.path.join(save_dir, title + "{}".format(str(seed)))
+        save_dir = save_dir + reward_strategy
         os.makedirs(save_dir, exist_ok=True)
 
     # Tensorboard
