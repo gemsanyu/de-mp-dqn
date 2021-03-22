@@ -19,7 +19,7 @@ def pad_action(act, act_param):
     return (act, params)
 
 @click.command()
-@click.option('--seed', default=0, help='Random seed.', type=int)
+@click.option('--seed', default=1, help='Random seed.', type=int)
 @click.option('--episodes', default=100000, help='Number of epsiodes.', type=int)
 @click.option('--evaluation-episodes', default=1000, help='Episodes over which to evaluate after training.', type=int)
 @click.option('--batch-size', default=32, help='Minibatch size.', type=int)
