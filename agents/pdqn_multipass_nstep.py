@@ -5,8 +5,8 @@ from agents.pdqn_multipass import MultiPassQActor
 from agents.pdqn_nstep import PDQNNStepAgent
 from agents.utils import hard_update_target_network
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
 
 class MultiPassPDQNNStepAgent(PDQNNStepAgent):
     NAME = "Multi-Pass P-DQN N-Step Agent"

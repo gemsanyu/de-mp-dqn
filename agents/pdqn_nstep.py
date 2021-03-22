@@ -10,8 +10,8 @@ from agents.memory.memory import MemoryNStepReturns
 from agents.pdqn import PDQNAgent
 from agents.utils import soft_update_target_network
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
 
 class QActorNonDueling(nn.Module):
 
@@ -166,7 +166,7 @@ class PDQNNStepAgent(PDQNAgent):
     def _optimize_td_loss(self):
         if self.replay_memory.nb_entries < self.batch_size or \
                 self.replay_memory.nb_entries < self.initial_memory_threshold:
-            return
+            return None
         # Sample a batch from replay memory
         states, actions, rewards, next_states, terminals, n_step_returns = self.replay_memory.sample(self.batch_size, random_machine=self.np_random)
 
@@ -196,7 +196,7 @@ class PDQNNStepAgent(PDQNAgent):
         y_expected = target
         loss_Q = self.loss_func(y_predicted, y_expected)
 
-        self.actor_optimiser.zero_grad()
+        self.actor_optimiser.zero_grad(set_to_none=True)
         loss_Q.backward()
         if self.clip_grad > 0:
             torch.nn.utils.clip_grad_norm_(self.actor.parameters(), self.clip_grad)
@@ -228,7 +228,7 @@ class PDQNNStepAgent(PDQNAgent):
             Q_loss = torch.mean(Q_indexed)
         else:
             Q_loss = torch.mean(torch.sum(Q_val, 1))
-        self.actor.zero_grad()
+        self.actor.zero_grad(set_to_none=True)
         Q_loss.backward()
         from copy import deepcopy
         delta_a = deepcopy(action_params.grad.data)
@@ -239,7 +239,7 @@ class PDQNNStepAgent(PDQNAgent):
             delta_a[:] = self._zero_index_gradients(delta_a, batch_action_indices=actions, inplace=True)
 
         out = -torch.mul(delta_a, action_params)
-        self.actor_param.zero_grad()
+        self.actor_param.zero_grad(set_to_none=True)
         out.backward(torch.ones(out.shape).to(device))
         if self.clip_grad > 0:
             torch.nn.utils.clip_grad_norm_(self.actor_param.parameters(), self.clip_grad)
@@ -248,3 +248,5 @@ class PDQNNStepAgent(PDQNAgent):
 
         soft_update_target_network(self.actor_param, self.actor_param_target, self.tau_actor_param)
         soft_update_target_network(self.actor, self.actor_target, self.tau_actor)
+
+        return Q_loss.item()
