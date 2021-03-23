@@ -22,17 +22,17 @@ def pad_action(act, act_param):
 @click.option('--seed', default=1, help='Random seed.', type=int)
 @click.option('--episodes', default=100000, help='Number of epsiodes.', type=int)
 @click.option('--evaluation-episodes', default=1000, help='Episodes over which to evaluate after training.', type=int)
-@click.option('--batch-size', default=32, help='Minibatch size.', type=int)
-@click.option('--gamma', default=0.99, help='Discount factor.', type=float)
+@click.option('--batch-size', default=64, help='Minibatch size.', type=int)
+@click.option('--gamma', default=0.9, help='Discount factor.', type=float)
 @click.option('--update-ratio', default=0.1, help='Ratio of updates to samples.', type=float)
 @click.option('--inverting-gradients', default=True,
               help='Use inverting gradients scheme instead of squashing function.', type=bool)
-@click.option('--initial-memory-threshold', default=50000, help='Number of transitions required to start learning.',
+@click.option('--initial-memory-threshold', default=100000, help='Number of transitions required to start learning.',
               type=int)
 @click.option('--use-ornstein-noise', default=False,
               help='Use Ornstein noise instead of epsilon-greedy with uniform random exploration.', type=bool)
 @click.option('--replay-memory-size', default=500000, help='Replay memory size in transitions.', type=int) # 500000
-@click.option('--epsilon-steps', default=50000, help='Number of episodes over which to linearly anneal epsilon.', type=int)
+@click.option('--epsilon-steps', default=100000, help='Number of episodes over which to linearly anneal epsilon.', type=int)
 @click.option('--epsilon-final', default=0.1, help='Final epsilon value.', type=float)
 @click.option('--tau-actor', default=0.01, help='Soft target network update averaging factor.', type=float)
 @click.option('--tau-actor-param', default=0.001, help='Soft target network update averaging factor.', type=float)  # 0.001
@@ -62,8 +62,7 @@ def run(seed, episodes, batch_size, gamma, inverting_gradients, initial_memory_t
         save_freq, save_dir, layers, initialise_params, reward_strategy):
 
     if save_freq > 0 and save_dir:
-        save_dir = os.path.join(save_dir, title + "{}".format(str(seed)))
-        save_dir = save_dir + reward_strategy
+        save_dir = os.path.join(save_dir, title + "{}".format(str(seed)) + reward_strategy)
         os.makedirs(save_dir, exist_ok=True)
 
     # Tensorboard
@@ -263,4 +262,5 @@ def compute_n_step_returns(episode_transitions, gamma):
 
 
 if __name__ == '__main__':
+    torch.set_num_threads(6)
     run()
