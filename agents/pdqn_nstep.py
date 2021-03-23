@@ -196,7 +196,7 @@ class PDQNNStepAgent(PDQNAgent):
         y_expected = target
         loss_Q = self.loss_func(y_predicted, y_expected)
 
-        self.actor_optimiser.zero_grad(set_to_none=True)
+        self.actor_optimiser.zero_grad()
         loss_Q.backward()
         if self.clip_grad > 0:
             torch.nn.utils.clip_grad_norm_(self.actor.parameters(), self.clip_grad)
@@ -228,7 +228,7 @@ class PDQNNStepAgent(PDQNAgent):
             Q_loss = torch.mean(Q_indexed)
         else:
             Q_loss = torch.mean(torch.sum(Q_val, 1))
-        self.actor.zero_grad(set_to_none=True)
+        self.actor.zero_grad()
         Q_loss.backward()
         from copy import deepcopy
         delta_a = deepcopy(action_params.grad.data)
@@ -239,7 +239,7 @@ class PDQNNStepAgent(PDQNAgent):
             delta_a[:] = self._zero_index_gradients(delta_a, batch_action_indices=actions, inplace=True)
 
         out = -torch.mul(delta_a, action_params)
-        self.actor_param.zero_grad(set_to_none=True)
+        self.actor_param.zero_grad()
         out.backward(torch.ones(out.shape).to(device))
         if self.clip_grad > 0:
             torch.nn.utils.clip_grad_norm_(self.actor_param.parameters(), self.clip_grad)
