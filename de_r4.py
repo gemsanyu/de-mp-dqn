@@ -38,7 +38,7 @@ def pad_action(act, act_param):
 @click.option('--tau-actor-param', default=0.001, help='Soft target network update averaging factor.', type=float)  # 0.001
 @click.option('--learning-rate-actor', default=0.001, help="Actor network learning rate.", type=float)
 @click.option('--learning-rate-actor-param', default=0.00001, help="Critic network learning rate.", type=float)
-@click.option('--clip-grad', default=1., help="Gradient clipping.", type=float)  # 1 better than 10.
+@click.option('--clip-grad', default=10., help="Gradient clipping.", type=float)  # 1 better than 10.
 @click.option('--beta', default=0.2, help='Averaging factor for on-policy and off-policy targets.', type=float)  # 0.5
 @click.option('--scale-actions', default=True, help="Scale actions.", type=bool)
 @click.option('--split', default=False, help='Separate action-parameter inputs.', type=bool)
@@ -100,8 +100,7 @@ def run(seed, episodes, batch_size, gamma, inverting_gradients, initial_memory_t
                            env.observation_space.spaces[0], env.action_space,
                            actor_kwargs={"hidden_layers": layers,
                                          'action_input_layer': action_input_layer,
-                                         'activation': "relu",
-                                         'output_layer_init_std': 0.01},
+                                         'activation': "relu"},
                            actor_param_kwargs={"hidden_layers": layers,
                                                'activation': "relu",
                                                'output_layer_init_std': 0.01},
@@ -136,7 +135,7 @@ def run(seed, episodes, batch_size, gamma, inverting_gradients, initial_memory_t
     network_trainable_parameters = sum(p.numel() for p in agent.actor.parameters() if p.requires_grad)
     network_trainable_parameters += sum(p.numel() for p in agent.actor_param.parameters() if p.requires_grad)
     print("Total Trainable Network Parameters: %d" % network_trainable_parameters)
-    max_steps = 25000
+    max_steps = 10000
     total_reward = 0.
     returns = []
     timesteps = []
@@ -177,7 +176,7 @@ def run(seed, episodes, batch_size, gamma, inverting_gradients, initial_memory_t
             if terminal:
                 break
         agent.end_episode()
-
+        print(i, episode_reward)
         # calculate n-step returns
         n_step_returns = compute_n_step_returns(transitions, gamma)
         for t, nsr in zip(transitions, n_step_returns):

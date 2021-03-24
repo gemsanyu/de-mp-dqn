@@ -194,7 +194,6 @@ class DEEnv(gym.Env):
     def step(self, action):
         opr = action[0]
         F = action[1][opr][0]
-        # print(self.budget, ": ", opr, F,"  --  ", self.best_so_far, self.best_value, self.worst_so_far)
         self.opu[self.i] = opr
         mutate = mutations[opr]
     
@@ -319,6 +318,8 @@ class DEEnv(gym.Env):
         ob[87:91] = Weighted_Offspring2(self.NP, self.n_ops, self.window, 2, self.max_gen)
         ob[91:95] = Weighted_Offspring2(self.NP, self.n_ops, self.window, 3, self.max_gen)
         ob[95:99] = Weighted_Offspring2(self.NP, self.n_ops, self.window, 4, self.max_gen)
+
+        # print(self.budget, ": ", opr, F,"  --  ", self.best_so_far, self.best_value, self.worst_so_far, reward)
 
         if self.budget <= 0:
             return (ob, None), reward, True, {}
