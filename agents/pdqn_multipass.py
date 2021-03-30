@@ -32,6 +32,7 @@ class MultiPassQActor(nn.Module):
         self.layers = nn.ModuleList()
         inputSize = self.state_size + self.action_parameter_size
         lastHiddenLayerSize = inputSize
+        hidden_layers = [100, 100]
         if hidden_layers is not None:
             nh = len(hidden_layers)
             self.layers.append(nn.Linear(inputSize, hidden_layers[0]))
@@ -74,12 +75,12 @@ class MultiPassQActor(nn.Module):
 
         num_layers = len(self.layers)
         for i in range(0, num_layers - 1):
-            # if self.activation == "relu":
-            x = F.relu(self.layers[i](x))
-            # elif self.activation == "leaky_relu":
-            #     x = F.leaky_relu(self.layers[i](x), negative_slope)
-            # else:
-            #     raise ValueError("Unknown activation function "+str(self.activation))
+            if self.activation == "relu":
+                x = F.relu(self.layers[i](x))
+            elif self.activation == "leaky_relu":
+                x = F.leaky_relu(self.layers[i](x), negative_slope)
+            else:
+                raise ValueError("Unknown activation function "+str(self.activation))
         Qall = self.layers[-1](x)
         Q = []
         # extract Q-values for each action

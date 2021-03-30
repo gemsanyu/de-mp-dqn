@@ -114,15 +114,15 @@ class ParamActor(nn.Module):
 
     def forward(self, state):
         x = state
-        # negative_slope = 0.01
+        negative_slope = 0.01
         num_hidden_layers = len(self.layers)
         for i in range(0, num_hidden_layers-1):
-            # if self.activation == "relu":
-            x = F.relu(self.layers[i](x))
-            # elif self.activation == "leaky_relu":
-            #     x = F.leaky_relu(self.layers[i](x), negative_slope)
-            # else:
-            #     raise ValueError("Unknown activation function " + str(self.activation))
+            if self.activation == "relu":
+                x = F.relu(self.layers[i](x))
+            elif self.activation == "leaky_relu":
+                x = F.leaky_relu(self.layers[i](x), negative_slope)
+            else:
+                raise ValueError("Unknown activation function " + str(self.activation))
         action_params = self.layers[num_hidden_layers-1](x)
         action_params += self.action_parameters_passthrough_layer(state)
 

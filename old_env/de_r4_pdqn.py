@@ -123,12 +123,12 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
     from agents.pdqn import PDQNAgent
     from agents.pdqn_split import SplitPDQNAgent
     from agents.pdqn_multipass import MultiPassPDQNAgent
-    # assert not (split and multipass)
-    # agent_class = PDQNAgent
-    # if split:
-    #     agent_class = SplitPDQNAgent
-    # elif multipass:
-    agent_class = MultiPassPDQNAgent
+    assert not (split and multipass)
+    agent_class = PDQNAgent
+    if split:
+        agent_class = SplitPDQNAgent
+    elif multipass:
+        agent_class = MultiPassPDQNAgent
     agent = agent_class(
                        env.observation_space.spaces[0], env.action_space,
                        batch_size=batch_size,

@@ -20,9 +20,9 @@ def pad_action(act, act_param):
 
 @click.command()
 @click.option('--seed', default=1, help='Random seed.', type=int)
-@click.option('--episodes', default=100000, help='Number of epsiodes.', type=int)
+@click.option('--episodes', default=200000, help='Number of epsiodes.', type=int)
 @click.option('--evaluation-episodes', default=1000, help='Episodes over which to evaluate after training.', type=int)
-@click.option('--batch-size', default=64, help='Minibatch size.', type=int)
+@click.option('--batch-size', default=256, help='Minibatch size.', type=int)
 @click.option('--gamma', default=0.9, help='Discount factor.', type=float)
 @click.option('--update-ratio', default=0.1, help='Ratio of updates to samples.', type=float)
 @click.option('--inverting-gradients', default=True,
@@ -31,7 +31,7 @@ def pad_action(act, act_param):
               type=int)
 @click.option('--use-ornstein-noise', default=False,
               help='Use Ornstein noise instead of epsilon-greedy with uniform random exploration.', type=bool)
-@click.option('--replay-memory-size', default=500000, help='Replay memory size in transitions.', type=int) # 500000
+@click.option('--replay-memory-size', default=1000000, help='Replay memory size in transitions.', type=int) # 500000
 @click.option('--epsilon-steps', default=100000, help='Number of episodes over which to linearly anneal epsilon.', type=int)
 @click.option('--epsilon-final', default=0.1, help='Final epsilon value.', type=float)
 @click.option('--tau-actor', default=0.01, help='Soft target network update averaging factor.', type=float)
@@ -51,7 +51,7 @@ def pad_action(act, act_param):
 @click.option('--action-input-layer', default=0, help='Which layer to input action parameters at when using split Q-networks.', type=int)
 @click.option('--layers', default="[100,100,100,100]", help='Duplicate action-parameter inputs.', cls=ClickPythonLiteralOption)
 @click.option('--save-freq', default=10, help='How often to save models (0 = never).', type=int)
-@click.option('--save-dir', default="results/soccer", help='Output directory.', type=str)
+@click.option('--save-dir', default="results/nstep", help='Output directory.', type=str)
 @click.option('--title', default="N-STEP", help="Prefix of output files", type=str)
 @click.option('--initialise-params', default=True, help='Initialise action parameters.', type=bool)
 @click.option('--reward-strategy', default="R3", help="Prefix of output files", type=str)
@@ -103,7 +103,7 @@ def run(seed, episodes, batch_size, gamma, inverting_gradients, initial_memory_t
                                          'activation': "relu"},
                            actor_param_kwargs={"hidden_layers": layers,
                                                'activation': "relu",
-                                               'output_layer_init_std': 0.01},
+                                               'output_layer_init_std': 0.0001},
                            batch_size=batch_size,
                            learning_rate_actor=learning_rate_actor,  # 0.0001
                            learning_rate_actor_param=learning_rate_actor_param,  # 0.001
