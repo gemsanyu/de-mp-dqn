@@ -202,7 +202,7 @@ class DEEnv(gym.Env):
         F = action[1][opr][0]
         # opr = 1
         # F = 0.1
-        print(self.budget, ": ", opr, F,"  --  ", self.best_so_far, self.best_value, self.worst_so_far)
+        # print(self.budget, ": ", opr, F,"  --  ", self.best_so_far, self.best_value, self.worst_so_far)
         self.opu[self.i] = opr
         mutate = mutations[opr]
     

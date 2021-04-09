@@ -200,15 +200,5 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
     returns = env.get_episode_rewards()
     np.save(os.path.join(dir, title + "{}".format(str(seed))),returns)
 
-    # if evaluation_episodes > 0:
-    #     print("Evaluating agent over {} episodes".format(evaluation_episodes))
-    #     agent.epsilon_final = 0.
-    #     agent.epsilon = 0.
-    #     agent.noise = None
-    #     evaluation_returns = evaluate(env, agent, evaluation_episodes)
-    #     print("Ave. evaluation return =", sum(evaluation_returns) / len(evaluation_returns))
-    #     np.save(os.path.join(dir, title + "{}e".format(str(seed))), evaluation_returns)
-
-
 if __name__ == '__main__':
     run()
