@@ -153,6 +153,7 @@ def run(seed, episodes, batch_size, gamma, inverting_gradients, initial_memory_t
         last_episode = last_episode + save_freq
         load_dir = os.path.join(save_dir, str(last_episode))
 
+    print("FINISH LOADING, LAST EPISODE=", last_episode)
     last_episode = last_episode - save_freq
     for i in range(last_episode, episodes):
         if save_freq > 0 and save_dir and i % save_freq == 0:
