@@ -170,4 +170,5 @@ slurm3.sh
 slurm4.sh
 slurm_small.sh
 slurm_small_r4.sh
-
+slurm12.sh
+slurm34.sh
