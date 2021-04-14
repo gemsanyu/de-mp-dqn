@@ -143,17 +143,66 @@ def run(seed, episodes, batch_size, gamma, inverting_gradients, initial_memory_t
     goals = []
     start_time_train = time.time()
 
-    #load saved weights
+    # load models
+    # if target networks are not saved, then they have to be approximated by simple liner interpolation
     last_episode = save_freq
     load_dir = os.path.join(save_dir, str(last_episode))
-    while os.path.exists(load_dir):
-        agent.load_models(load_dir)
-        soft_update_target_network(agent.actor, agent.actor_target, agent.tau_actor*save_freq)
-        soft_update_target_network(agent.actor_param, agent.actor_param_target, agent.tau_actor_param*save+freq)
+    while os.path.exists(load_dir+"_actor.pt"):
+        print("LOADING NETWORKS FROM EPISODE-"+str(last_episode))
+        #Q network (critic)
+        old_params = agent.actor.parameters()
+        agent.actor.load_state_dict(torch.load(load_dir + '_actor.pt', map_location='cpu'))
+        for target_param, param, old_param in zip(agent.actor_target.parameters(),
+                                                  agent.actor.parameters(),
+                                                  old_params):
+            # iteratively update the target networks
+            # with the linear interpolation of the current primary network + next snapshot's primary network
+            primary_diff = param.data - old_param.data
+            for i in range(1, save_freq):
+                target_param.data.copy_(tau_actor * (param.data + (float(i)/float(save_freq))*primary_diff)
+                                        (1.0 - tau_actor) * target_param.data)
+
+        # parameter network (actor)
+        old_params = agent.actor_param.parameters
+        agent.actor_param.load_state_dict(torch.load(load_dir + '_actor_param.pt', map_location='cpu'))
+        for target_param, param, old_param in zip(agent.actor_param_target.parameters(),
+                                                  agent.actor_param.parameters(),
+                                                  old_params):
+            # iteratively update the target networks
+            # with the linear interpolation of the current primary network + next snapshot's primary network
+            primary_diff = param.data - old_param.data
+            for i in range(1, save_freq):
+                target_param.data.copy_(tau_actor * (param.data + (float(i)/float(save_freq))*primary_diff)
+                                        (1.0 - tau_actor) * target_param.data)
+
         last_episode = last_episode + save_freq
         load_dir = os.path.join(save_dir, str(last_episode))
 
-    print("FINISH LOADING, LAST EPISODE=", last_episode)
+    # while os.path.exists(load_dir):
+    #     next_episode = last_episode + save_freq
+    #     next_load_dir = os.path.join(save_dir, str(next_episode))
+    #     if not os.path.exists(next_load_dir):
+    #         break
+    #         self.actor_tmp.load_state_dict(torch.load(next_load_dir + '_actor.pt', map_location='cpu'))
+    #         self.actor_param_tmp.load_state_dict(torch.load(next_load_dir + '_actor_param.pt', map_location='cpu'))
+    #
+    #         # add to target network
+    #         for actor_target_p, actor_p, actor_tmp_p in zip(self.actor_target.parameters(),
+    #                                                         self.actor.parameters(),
+    #                                                         self.actor_tmp.parameters()):
+    #             for i in range(save_freq):
+    #                 actor_target_p.data.copy_(
+    #                     self.tau_actor*(actor_p.data+(1.0/float(i))*(actor_tmp_p.data-actor_p.data)) +
+    #                     (1-self.tau_actor)*actor_target_p)
+    #
+    #         for param_target_p, param_p, param_tmp_p in zip(self.actor_param_target.parameters(),
+    #                                                         self.actor_param.parameters(),
+    #                                                         self.actor_param_tmp.parameters()):
+    #             for i in range(save_freq):
+    #                 param_target_p.data.copy_(
+    #                     self.tau_actor*(param_p.data+(1.0/float(i))*(param_tmp_p.data-actor_p.data)) +
+    #                     (1-self.tau_actor)*actor_target_p)
+    # # Models are loaded #
     last_episode = last_episode - save_freq
     for i in range(last_episode, episodes):
         if save_freq > 0 and save_dir and i % save_freq == 0:

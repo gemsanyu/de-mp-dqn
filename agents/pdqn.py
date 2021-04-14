@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 import random
+import os
 from collections import Counter
 from torch.autograd import Variable
 
@@ -491,7 +492,7 @@ class PDQNAgent(Agent):
 
     def save_models(self, prefix):
         """
-        saves the target actor and critic models
+        saves the primary actor and critic models
         :param prefix: the count of episodes iterated
         :return:
         """
