@@ -32,7 +32,6 @@ class MultiPassQActor(nn.Module):
         self.layers = nn.ModuleList()
         inputSize = self.state_size + self.action_parameter_size
         lastHiddenLayerSize = inputSize
-        hidden_layers = [100, 100]
         if hidden_layers is not None:
             nh = len(hidden_layers)
             self.layers.append(nn.Linear(inputSize, hidden_layers[0]))
