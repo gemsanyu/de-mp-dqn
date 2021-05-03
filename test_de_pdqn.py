@@ -81,13 +81,14 @@ def evaluate(env, agent, episodes=25):
 @click.option('--render-freq', default=100, help='How often to render / save frames of an episode.', type=int)
 @click.option('--save-frames', default=False, help="Save render frames from the environment. Incompatible with visualise.", type=bool)
 @click.option('--visualise', default=False, help="Render game states. Incompatible with save-frames.", type=bool)
-@click.option('--title', default="DE-PDDQN", help="Prefix of output files", type=str)
-@click.option('--reward-strategy', default="R1", help="Prefix of output files", type=str)
+@click.option('--title', default="DE-MPDQN", help="Prefix of output files", type=str)
+@click.option('--reward-strategy', default="R1", help="Reward Strategy of the environment", type=str)
+@click.option('--last-run', default=1, help="saved models of Last run to test", type=int)
 def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradients, initial_memory_threshold,
         replay_memory_size, epsilon_steps, tau_actor, tau_actor_param, use_ornstein_noise, learning_rate_actor,
         learning_rate_actor_param, epsilon_final, zero_index_gradients, initialise_params, scale_actions,
         clip_grad, split, indexed, layers, multipass, weighted, average, random_weighted, render_freq,
-        save_freq, save_dir, save_frames, visualise, action_input_layer, title, reward_strategy="R1"):
+        save_freq, save_dir, save_frames, visualise, action_input_layer, title, reward_strategy="R1", last_run=1):
 
 
     np.random.seed()
@@ -142,7 +143,7 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
     # agent.epsilon = 0.
     # agent.noise = None
 
-    max_runs = 1
+    max_runs = 25
     dims = [10, 30]
     # func_select = [f18.F18, f23.F23]
     func_select = [unimodal.F3, basic_multimodal.F9, f16.F16, f18.F18, f23.F23]
@@ -189,16 +190,19 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
                                            'output_layer_init_std': 0.0001,},
                        zero_index_gradients=zero_index_gradients,
                        seed=seed)
-            load_dir = os.path.join(save_dir, str(1770))
+            load_dir = os.path.join(save_dir, str(last_run))
             agent.load_models(load_dir)
+            # agent.variances = 0
+            # agent.discrete_agent.epsilon = 0.
+            # agent.discrete_agent.temperature = 0.
             agent.variances = 0
-            agent.discrete_agent.epsilon = 0.
-            agent.discrete_agent.temperature = 0.
+            agent.epsilon = 0.
+            agent.noise = None
+            agent.actor.eval()
+            agent.actor_param.eval()
             evaluate(env, agent, max_runs)
-
-
-    returns = env.get_episode_rewards()
-    np.save(os.path.join(dir, title + "{}".format(str(seed))),returns)
+    # returns = env.get_episode_rewards()
+    # np.save(os.path.join(dir, title + "{}".format(str(seed))),returns)
 
 if __name__ == '__main__':
     run()
