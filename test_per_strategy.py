@@ -108,7 +108,7 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
     # structured
 
     # DUMMY ENV
-    d = 10
+    d = 2
     fun = unimodal.F3(d)
     lbounds = fun.min_bounds; lbounds = np.array(lbounds); #print(lbounds)
     ubounds = fun.max_bounds; ubounds = np.array(ubounds); #print(ubounds)
@@ -166,7 +166,6 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
         print(load_dir)
         epoch += 10
         load_dir = os.path.join(save_dir, str(epoch))
-        continue
         mean_row = []
         std_row = []
         for d in dims:
@@ -191,10 +190,11 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
 
         mean_error_arr += [mean_row]
         std_error_arr += [std_row]
+        if epoch == 30:
+            break
 
     # returns = env.get_episode_rewards()
     # np.save(os.path.join(dir, title + "{}".format(str(seed))),returns)
-    return
     mean_result_file = open(reward_strategy+"mean.csv", "w+")
     mean_result_file.write("RUN,F3-10,F3-10,F3-10,F3-10,F3-10,F3-10,F3-10,F16-30,F18-30,F23-30\n")
     for i in range(len(mean_error_arr)):
