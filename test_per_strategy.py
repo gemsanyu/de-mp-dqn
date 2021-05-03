@@ -164,6 +164,8 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
     while os.path.exists(load_dir+"_actor.pt"):
         agent.load_models(load_dir)
         print(load_dir)
+        epoch += 10
+        load_dir = os.path.join(save_dir, str(epoch))
         continue
         mean_row = []
         std_row = []
@@ -190,8 +192,6 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
         mean_error_arr += [mean_row]
         std_error_arr += [std_row]
 
-        epoch += 10
-        load_dir = os.path.join(save_dir, str(epoch))
     # returns = env.get_episode_rewards()
     # np.save(os.path.join(dir, title + "{}".format(str(seed))),returns)
     return
