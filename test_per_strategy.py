@@ -100,7 +100,7 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
 
     start_time = time.time()
 
-    max_runs = 25
+    max_runs = 2
     dims = [10, 30]
     func_select = [unimodal.F3, basic_multimodal.F9, f16.F16, f18.F18, f23.F23]
 
@@ -108,7 +108,7 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
     # structured
 
     # DUMMY ENV
-    d = 2
+    d = 10
     fun = unimodal.F3(d)
     lbounds = fun.min_bounds; lbounds = np.array(lbounds); #print(lbounds)
     ubounds = fun.max_bounds; ubounds = np.array(ubounds); #print(ubounds)
