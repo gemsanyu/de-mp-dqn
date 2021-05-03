@@ -6,6 +6,7 @@ import gym
 import sys
 from common import ClickPythonLiteralOption
 
+import torch
 import numpy as np
 from optproblems.cec2005 import *
 
@@ -100,7 +101,7 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
 
     start_time = time.time()
 
-    max_runs = 2
+    max_runs = 25
     dims = [10, 30]
     func_select = [unimodal.F3, basic_multimodal.F9, f16.F16, f18.F18, f23.F23]
 
@@ -157,17 +158,20 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
     agent.actor.eval()
     agent.actor_param.eval()
 
+    #preparing output files
+    mean_result_file = open(reward_strategy+"mean.csv", "w+")
+    mean_result_file.write("RUN,F3-10,F3-10,F3-10,F3-10,F3-10,F3-10,F3-10,F16-30,F18-30,F23-30\n")
+
+    std_result_file = open(reward_strategy+"std.csv", "w+")
+    std_result_file.write("RUN,F3-10,F3-10,F3-10,F3-10,F3-10,F3-10,F3-10,F16-30,F18-30,F23-30\n")
+
     epoch = 10
     load_dir = os.path.join(save_dir, str(epoch))
-    mean_error_arr = []
-    std_error_arr = []
     while os.path.exists(load_dir+"_actor.pt"):
         agent.load_models(load_dir)
         print(load_dir)
-        epoch += 10
-        load_dir = os.path.join(save_dir, str(epoch))
-        mean_row = []
-        std_row = []
+        mean_new_line = str(epoch)
+        std_new_line = str(epoch)
         for d in dims:
             for f in func_select:
                 fun = f(d)
@@ -185,35 +189,19 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
                 if scale_actions:
                     env = ScaledParameterisedActionWrapper(env)
                 mean_err, std_err = evaluate(env, agent, max_runs)
-                mean_row += [mean_err]
-                std_row += [std_err]
+                mean_new_line = mean_new_line + "," + str(mean_err)
+                std_new_line = std_new_line + "," + str(std_err)
 
-        mean_error_arr += [mean_row]
-        std_error_arr += [std_row]
-        if epoch == 30:
-            break
+        mean_result_file.write(mean_new_line+"\n")
+        std_result_file.write(std_new_line+"\n")
+        mean_result_file.flush()
+        std_result_file.flush()
+        epoch += 10
+        load_dir = os.path.join(save_dir, str(epoch))
 
-    # returns = env.get_episode_rewards()
-    # np.save(os.path.join(dir, title + "{}".format(str(seed))),returns)
-    mean_result_file = open(reward_strategy+"mean.csv", "w+")
-    mean_result_file.write("RUN,F3-10,F3-10,F3-10,F3-10,F3-10,F3-10,F3-10,F16-30,F18-30,F23-30\n")
-    for i in range(len(mean_error_arr)):
-        epoch = 10*i + 10
-        new_line = str(epoch)
-        for j in range(len(mean_error_arr[i])):
-            new_line = new_line + "," + str(mean_error_arr[i][j])
-        mean_result_file.write(new_line+"\n")
     mean_result_file.close()
-
-    std_result_file = open(reward_strategy+"std.csv", "w+")
-    std_result_file.write("RUN,F3-10,F3-10,F3-10,F3-10,F3-10,F3-10,F3-10,F16-30,F18-30,F23-30\n")
-    for i in range(len(std_error_arr)):
-        epoch = 10*i + 10
-        new_line = str(epoch)
-        for j in range(len(std_error_arr[i])):
-            new_line = new_line + "," + str(std_error_arr[i][j])
-        std_result_file.write(new_line+"\n")
     std_result_file.close()
 
 if __name__ == '__main__':
+    torch.set_num_threads(3)
     run()
