@@ -201,7 +201,7 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
         epoch = 10*i + 10
         new_line = str(epoch)
         for j in range(len(mean_error_arr[i])):
-            new_line = new_line + "," + str(men_error_arr[i][j])
+            new_line = new_line + "," + str(mean_error_arr[i][j])
         mean_result_file.write(new_line+"\n")
     mean_result_file.close()
 
@@ -211,7 +211,7 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
         epoch = 10*i + 10
         new_line = str(epoch)
         for j in range(len(std_error_arr[i])):
-            new_line = new_line + "," + str(men_error_arr[i][j])
+            new_line = new_line + "," + str(std_error_arr[i][j])
         std_result_file.write(new_line+"\n")
     std_result_file.close()
 
