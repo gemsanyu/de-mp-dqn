@@ -1,4 +1,5 @@
 import os
+import math
 import click
 import time
 import gym
@@ -37,7 +38,7 @@ def evaluate(env, agent, episodes=25):
             total_reward += reward
             # print(action, env.best_so_far)
         timesteps.append(t)
-        fitness.append(env.best_so_far)
+        fitness.append(math.fabs(env.best_so_far-env.best_value))
         returns.append(total_reward)
     # return np.column_stack((returns, timesteps))
     fitness = np.array(fitness)
@@ -143,7 +144,7 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
     # agent.epsilon = 0.
     # agent.noise = None
 
-    max_runs = 25
+    max_runs = 2
     dims = [10, 30]
     # func_select = [f18.F18, f23.F23]
     func_select = [unimodal.F3, basic_multimodal.F9, f16.F16, f18.F18, f23.F23]

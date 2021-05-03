@@ -510,4 +510,4 @@ class PDQNAgent(Agent):
         # also try load on CPU if no GPU available?
         self.actor.load_state_dict(torch.load(prefix + '_actor.pt', map_location='cpu'))
         self.actor_param.load_state_dict(torch.load(prefix + '_actor_param.pt', map_location='cpu'))
-        print('Models loaded successfully')
+        # print('Models loaded successfully')
