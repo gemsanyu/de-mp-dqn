@@ -172,3 +172,5 @@ slurm_small.sh
 slurm_small_r4.sh
 slurm12.sh
 slurm34.sh
+slurm_test_mpdqn.sh
+
