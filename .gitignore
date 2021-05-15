@@ -173,4 +173,7 @@ slurm_small_r4.sh
 slurm12.sh
 slurm34.sh
 slurm_test_mpdqn.sh
-
+*.sh
+test_results/
+old_results/
+*.out

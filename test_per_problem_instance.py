@@ -189,7 +189,7 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
         sol = np.copy(o.phenome)
         best_value = fun.objective_function(sol)
 
-        env = DEEnv(fun, lbounds, ubounds, d, best_value)
+        env = DEEnv(fun, lbounds, ubounds, problem_dim, best_value)
         env = ScaledStateWrapper(env)
         env = DEFlattenedActionWrapper(env)
         if scale_actions:
