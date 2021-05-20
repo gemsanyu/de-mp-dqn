@@ -12,7 +12,7 @@ import numpy as np
 
 from common.wrappers import ScaledStateWrapper, ScaledParameterisedActionWrapper
 from common.de_domain import DEFlattenedActionWrapper
-from de_train import DEEnv
+from de_train_v2 import DEEnv
 
 def pad_action(act, act_param):
     params = [np.zeros((1,), dtype=np.float32), np.zeros((1,), dtype=np.float32),
@@ -63,7 +63,7 @@ def evaluate(env, agent, episodes=1000):
 @click.option('--learning-rate-actor-param', default=0.0001, help="Critic network learning rate.", type=float)  # 0.00001
 @click.option('--scale-actions', default=True, help="Scale actions.", type=bool)
 @click.option('--initialise-params', default=True, help='Initialise action parameters.', type=bool)
-@click.option('--clip-grad', default=10., help="Parameter gradient clipping limit.", type=float)
+@click.option('--clip-grad', default=1., help="Parameter gradient clipping limit.", type=float)
 @click.option('--split', default=False, help='Separate action-parameter inputs.', type=bool)
 @click.option('--multipass', default=True, help='Separate action-parameter inputs using multiple Q-network passes.', type=bool)
 @click.option('--indexed', default=False, help='Indexed loss function.', type=bool)
@@ -72,13 +72,13 @@ def evaluate(env, agent, episodes=1000):
 @click.option('--random-weighted', default=False, help='Randomly weighted loss function.', type=bool)
 @click.option('--zero-index-gradients', default=False, help="Whether to zero all gradients for action-parameters not corresponding to the chosen action.", type=bool)
 @click.option('--action-input-layer', default=0, help='Which layer to input action parameters.', type=int)
-@click.option('--layers', default='[100,100,100,100]', help='Duplicate action-parameter inputs.', cls=ClickPythonLiteralOption)
+@click.option('--layers', default='[100,100]', help='Duplicate action-parameter inputs.', cls=ClickPythonLiteralOption)
 @click.option('--save-freq', default=10, help='How often to save models (0 = never).', type=int)
 @click.option('--save-dir', default="results/platform", help='Output directory.', type=str)
 @click.option('--render-freq', default=100, help='How often to render / save frames of an episode.', type=int)
 @click.option('--save-frames', default=False, help="Save render frames from the environment. Incompatible with visualise.", type=bool)
 @click.option('--visualise', default=False, help="Render game states. Incompatible with save-frames.", type=bool)
-@click.option('--title', default="DE-MPDQN", help="Prefix of output files", type=str)
+@click.option('--title', default="MPDQNV2", help="Prefix of output files", type=str)
 @click.option('--reward-strategy', default="R1", help="Prefix of output files", type=str)
 def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradients, initial_memory_threshold,
         replay_memory_size, epsilon_steps, tau_actor, tau_actor_param, use_ornstein_noise, learning_rate_actor,
@@ -94,7 +94,7 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
         save_dir = os.path.join(save_dir, title + reward_strategy + "{}".format(str(seed)))
         os.makedirs(save_dir, exist_ok=True)
 
-    env = DEEnv(reward_definition=reward_strategy)
+    env = DEEnv(reward_strategy=reward_strategy)
     initial_params_ = [0.5, 0.5, 0.5, 0.5]
     if scale_actions:
         for a in range(env.action_space.spaces[0].n):
@@ -164,12 +164,24 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
     # agent.epsilon_final = 0.
     # agent.epsilon = 0.
     # agent.noise = None
+    stage_length = len(env.function_list)
+    best_average_stage_rewards = -999999999999.0
+    stage_rewards = 0.
     for i in range(episodes):
+        if i % stage_length==0:
+            if i == 0:
+                agent.save_models(os.path.join(save_dir, str(i)))
+            else:
+                average_stage_rewards = stage_rewards/stage_length
+                if average_stage_rewards > best_average_stage_rewards:
+                    best_average_stage_rewards = average_stage_rewards
+                    agent.save_models(os.path.join(save_dir, str(i)))
+            stage_rewards = 0.
         total_q_loss = 0.
         total_rewards = 0.
-        if save_freq > 0 and save_dir and i % save_freq == 0:
-            agent.save_models(os.path.join(save_dir, str(i)))
-        state, _ = env.reset()
+        # if save_freq > 0 and save_dir and i % save_freq == 0:
+
+        state,_ = env.reset_()
         state = np.array(state, dtype=np.float32, copy=False)
 
         act, act_param, all_action_parameters = agent.act(state)
