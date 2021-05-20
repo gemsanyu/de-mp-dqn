@@ -104,8 +104,8 @@ class DEEnv(gym.Env):
         if not is_test:
             self.current_function_idx += 1
             if self.current_function_idx == self.num_function:
-                self.current_function_idx= 0
-                self.randomized_func_idx = np.random.choice(self.num_function, replace=False)
+                self.current_function_idx = 0
+                self.randomized_func_idx = np.random.choice(self.num_function, self.num_function, replace=False)
             self.func = self.function_list[self.randomized_func_idx[self.current_function_idx]]
             self.real_best_value = self.func_best_value_list[self.randomized_func_idx[self.current_function_idx]]
         else:

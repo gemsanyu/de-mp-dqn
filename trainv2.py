@@ -217,7 +217,7 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
             if terminal:
                 break
         agent.end_episode()
-
+        stage_rewards += total_rewards
         writer.add_scalar('total episode rewards', total_rewards, i)
         writer.add_scalar('average episode q_loss', total_q_loss/max_steps, i)
 
