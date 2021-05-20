@@ -405,21 +405,24 @@ class PDQNAgent(Agent):
 
     def _add_sample(self, state, action, reward, next_state, next_action, terminal):
         assert len(action) == 1 + self.action_parameter_size
-        self.replay_memory.append(state, action, reward, next_state, terminal=terminal)
+        self.replay_memory.append(torch.tensor(state), torch.tensor(action), torch.tensor(reward),
+                                  torch.tensor(next_state), terminal=torch.tensor(terminal))
 
     def _optimize_td_loss(self):
         if self._step < self.batch_size or self._step < self.initial_memory_threshold:
             return None
         # Sample a batch from replay memory
         states, actions, rewards, next_states, terminals = self.replay_memory.sample(self.batch_size, random_machine=self.np_random)
+        # states = torch.from_numpy(states).to(self.device)
+        # actions_combined = torch.from_numpy(actions).to(self.device)  # make sure to separate actions and parameters
+        # actions = actions_combined[:, 0].long()
+        # action_parameters = actions_combined[:, 1:]
+        # rewards = torch.from_numpy(rewards).to(self.device).squeeze()
+        # next_states = torch.from_numpy(next_states).to(self.device)
+        # terminals = torch.from_numpy(terminals).to(self.device).squeeze()
+        action_parameters = actions[:, 1:]
+        actions = actions[:, 0].long()
 
-        states = torch.from_numpy(states).to(self.device)
-        actions_combined = torch.from_numpy(actions).to(self.device)  # make sure to separate actions and parameters
-        actions = actions_combined[:, 0].long()
-        action_parameters = actions_combined[:, 1:]
-        rewards = torch.from_numpy(rewards).to(self.device).squeeze()
-        next_states = torch.from_numpy(next_states).to(self.device)
-        terminals = torch.from_numpy(terminals).to(self.device).squeeze()
 
         # ---------------------- optimize Q-network ----------------------
         with torch.no_grad():
@@ -500,6 +503,9 @@ class PDQNAgent(Agent):
         torch.save(self.actor_param.state_dict(), prefix + '_actor_param.pt')
         print('Models saved successfully')
 
+        torch.save(self.actor_target.state_dict(), prefix + '_actor_target.pt')
+        torch.save(self.actor_param_target.state_dict(), prefix + '_actor_param_target.pt')
+
     def load_models(self, prefix):
         """
         loads the target actor and critic models, and copies them onto actor and critic models
@@ -510,4 +516,6 @@ class PDQNAgent(Agent):
         # also try load on CPU if no GPU available?
         self.actor.load_state_dict(torch.load(prefix + '_actor.pt', map_location='cpu'))
         self.actor_param.load_state_dict(torch.load(prefix + '_actor_param.pt', map_location='cpu'))
+        self.actor_target.load_state_dict(torch.load(prefix + '_actor_target.pt', map_location='cpu'))
+        self.actor_param_target.load_state_dict(torch.load(prefix + '_actor_param_target.pt', map_location='cpu'))
         # print('Models loaded successfully')

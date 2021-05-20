@@ -2,14 +2,17 @@
 Source: https://github.com/openai/baselines/blob/master/baselines/ddpg/ddpg.py
 """
 import numpy as np
+import torch
 
+DEVICE = torch.device("cpu")
 
 class RingBuffer(object):
-    def __init__(self, maxlen, shape, dtype='float32'):
+    def __init__(self, maxlen, shape, dtype=torch.float32):
         self.maxlen = maxlen
         self.start = 0
         self.length = 0
-        self.data = np.zeros((maxlen,) + shape).astype(dtype)
+        # self.data = np.zeros((maxlen,) + shape).astype(dtype)
+        self.data = torch.zeros(size=(maxlen,)+shape, device=DEVICE, dtype=dtype)
 
     def __len__(self):
         return self.length
