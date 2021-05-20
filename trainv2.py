@@ -50,7 +50,7 @@ def evaluate(env, agent, episodes=1000):
 @click.option('--gamma', default=0.9, help='Discount factor.', type=float)
 @click.option('--inverting-gradients', default=True,
               help='Use inverting gradients scheme instead of squashing function.', type=bool)
-@click.option('--initial-memory-threshold', default=1e3, help='Number of transitions required to start learning.',
+@click.option('--initial-memory-threshold', default=1e5, help='Number of transitions required to start learning.',
               type=int)  # may have been running with 500??
 @click.option('--use-ornstein-noise', default=True,
               help='Use Ornstein noise instead of epsilon-greedy with uniform random exploration.', type=bool)
