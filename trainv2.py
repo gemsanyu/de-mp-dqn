@@ -171,8 +171,12 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
         if i % stage_length==0:
             if i == 0:
                 agent.save_models(os.path.join(save_dir, str(i)))
+                writer.add_scalar("Average Stage Rewards", 0, i/stage_length)
+                writer.flush()
             else:
                 average_stage_rewards = stage_rewards/stage_length
+                writer.add_scalar("Average Stage Rewards", average_stage_rewards, i/stage_length)
+                writer.flush()
                 if average_stage_rewards > best_average_stage_rewards:
                     best_average_stage_rewards = average_stage_rewards
                     agent.save_models(os.path.join(save_dir, str(i)))
