@@ -46,8 +46,8 @@ def evaluate(env, agent, episodes=1000):
 @click.option('--seed', default=1, help='Random seed.', type=int)
 @click.option('--evaluation-episodes', default=1000, help='Episodes over which to evaluate after training.', type=int)
 @click.option('--episodes', default=1000000, help='Number of epsiodes.', type=int)
-@click.option('--batch-size', default=64, help='Minibatch size.', type=int)
-@click.option('--gamma', default=0.9, help='Discount factor.', type=float)
+@click.option('--batch-size', default=32, help='Minibatch size.', type=int)
+@click.option('--gamma', default=0.99, help='Discount factor.', type=float)
 @click.option('--inverting-gradients', default=True,
               help='Use inverting gradients scheme instead of squashing function.', type=bool)
 @click.option('--initial-memory-threshold', default=1e5, help='Number of transitions required to start learning.',
@@ -72,13 +72,13 @@ def evaluate(env, agent, episodes=1000):
 @click.option('--random-weighted', default=False, help='Randomly weighted loss function.', type=bool)
 @click.option('--zero-index-gradients', default=False, help="Whether to zero all gradients for action-parameters not corresponding to the chosen action.", type=bool)
 @click.option('--action-input-layer', default=0, help='Which layer to input action parameters.', type=int)
-@click.option('--layers', default='[100,100]', help='Duplicate action-parameter inputs.', cls=ClickPythonLiteralOption)
+@click.option('--layers', default='[100,100,100,100]', help='Duplicate action-parameter inputs.', cls=ClickPythonLiteralOption)
 @click.option('--save-freq', default=10, help='How often to save models (0 = never).', type=int)
 @click.option('--save-dir', default="results/platform", help='Output directory.', type=str)
 @click.option('--render-freq', default=100, help='How often to render / save frames of an episode.', type=int)
 @click.option('--save-frames', default=False, help="Save render frames from the environment. Incompatible with visualise.", type=bool)
 @click.option('--visualise', default=False, help="Render game states. Incompatible with save-frames.", type=bool)
-@click.option('--title', default="MPDQNV2", help="Prefix of output files", type=str)
+@click.option('--title', default="MPDQNV2400", help="Prefix of output files", type=str)
 @click.option('--reward-strategy', default="R1", help="Prefix of output files", type=str)
 def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradients, initial_memory_threshold,
         replay_memory_size, epsilon_steps, tau_actor, tau_actor_param, use_ornstein_noise, learning_rate_actor,
