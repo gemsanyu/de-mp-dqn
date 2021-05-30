@@ -45,7 +45,7 @@ def evaluate(env, agent, episodes=1000):
 @click.command()
 @click.option('--seed', default=1, help='Random seed.', type=int)
 @click.option('--evaluation-episodes', default=1000, help='Episodes over which to evaluate after training.', type=int)
-@click.option('--episodes', default=1000, help='Number of epsiodes.', type=int)
+@click.option('--episodes', default=1000000, help='Number of epsiodes.', type=int)
 @click.option('--batch-size', default=128, help='Minibatch size.', type=int)
 @click.option('--gamma', default=0.99, help='Discount factor.', type=float)
 @click.option('--inverting-gradients', default=True,
@@ -80,7 +80,7 @@ def evaluate(env, agent, episodes=1000):
 @click.option('--visualise', default=False, help="Render game states. Incompatible with save-frames.", type=bool)
 @click.option('--title', default="MPDQNMulti", help="Prefix of output files", type=str)
 @click.option('--reward-strategy', default="R1", help="Prefix of output files", type=str)
-@click.option('--env-num', default=10, help="Number of environment solved per step", type=int)
+@click.option('--env-num', default=5, help="Number of environment solved per step", type=int)
 def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradients, initial_memory_threshold,
         replay_memory_size, epsilon_steps, tau_actor, tau_actor_param, use_ornstein_noise, learning_rate_actor,
         learning_rate_actor_param, epsilon_final, zero_index_gradients, initialise_params, scale_actions,

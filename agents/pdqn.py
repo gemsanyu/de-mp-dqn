@@ -333,9 +333,9 @@ class PDQNAgent(Agent):
                                                               self.action_parameter_max_numpy))
             else:
                 # select maximum action
-                Q_a = self.actor.forward(state.unsqueeze(0), all_action_parameters.unsqueeze(0))
+                Q_a = self.actor.forward(state, all_action_parameters)
                 Q_a = Q_a.detach().cpu().data.numpy()
-                action = np.argmax(Q_a)
+                action = np.argmax(Q_a, axis=1)
 
             # add noise only to parameters of chosen action
             all_action_parameters = all_action_parameters.cpu().data.numpy()
