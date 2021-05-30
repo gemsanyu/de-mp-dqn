@@ -175,7 +175,8 @@ class PDQNAgent(Agent):
                  average=False,
                  random_weighted=False,
                  device=DEVICE,
-                 seed=None):
+                 seed=None,
+                 env_num=1):
         super(PDQNAgent, self).__init__(observation_space, action_space)
         self.device = torch.device(device)
         self.num_actions = self.action_space.spaces[0].n
@@ -224,7 +225,7 @@ class PDQNAgent(Agent):
         self._seed(seed)
 
         self.use_ornstein_noise = use_ornstein_noise
-        self.noise = OrnsteinUhlenbeckActionNoise(self.action_parameter_size, random_machine=self.np_random, mu=0., theta=0.15, sigma=0.0001) #, theta=0.01, sigma=0.01)
+        self.noise = OrnsteinUhlenbeckActionNoise((env_num, self.action_parameter_size), random_machine=self.np_random, mu=0., theta=0.15, sigma=0.0001) #, theta=0.01, sigma=0.01)
 
         print(self.num_actions+self.action_parameter_size)
         self.replay_memory = Memory(replay_memory_size, observation_space.shape, (1+self.action_parameter_size,), next_actions=False)
@@ -245,6 +246,7 @@ class PDQNAgent(Agent):
         # using AMSgrad ("fixed" version of Adam, amsgrad=True) doesn't seem to help either...
         self.actor_optimiser = optim.Adam(self.actor.parameters(), lr=self.learning_rate_actor) #, betas=(0.95, 0.999))
         self.actor_param_optimiser = optim.Adam(self.actor_param.parameters(), lr=self.learning_rate_actor_param) #, betas=(0.95, 0.999)) #, weight_decay=critic_l2_reg)
+        self.env_num = env_num
 
     def __str__(self):
         desc = super().__str__() + "\n"
@@ -319,13 +321,13 @@ class PDQNAgent(Agent):
 
     def act(self, state):
         with torch.no_grad():
+            batch_size, _ = state.shape
             state = torch.from_numpy(state).to(self.device)
             all_action_parameters = self.actor_param.forward(state)
-
             # Hausknecht and Stone [2016] use epsilon greedy actions with uniform random action-parameter exploration
             rnd = self.np_random.uniform()
             if rnd < self.epsilon:
-                action = self.np_random.choice(self.num_actions)
+                action = self.np_random.choice(self.num_actions, size=batch_size, replace=True)
                 if not self.use_ornstein_noise:
                     all_action_parameters = torch.from_numpy(np.random.uniform(self.action_parameter_min_numpy,
                                                               self.action_parameter_max_numpy))
@@ -337,11 +339,16 @@ class PDQNAgent(Agent):
 
             # add noise only to parameters of chosen action
             all_action_parameters = all_action_parameters.cpu().data.numpy()
-            offset = np.array([self.action_parameter_sizes[i] for i in range(action)], dtype=int).sum()
-            if self.use_ornstein_noise and self.noise is not None:
-                all_action_parameters[offset:offset + self.action_parameter_sizes[action]] += self.noise.sample()[offset:offset + self.action_parameter_sizes[action]]
-            action_parameters = all_action_parameters[offset:offset+self.action_parameter_sizes[action]]
+            offset = np.array([sum(self.action_parameter_sizes[:action[i]]) for i in range(self.env_num)])
+            last = np.array([offset[i]+self.action_parameter_sizes[action[i]] for i in range(self.env_num)])
+            mask = np.zeros((self.env_num, self.action_parameter_size), dtype=bool)
+            for i in range(self.env_num):
+                mask[i, offset[i]:last[i]] = 1
 
+            if self.use_ornstein_noise and self.noise is not None:
+                noise = self.noise.sample()
+                all_action_parameters[mask] += noise[mask]
+            action_parameters = all_action_parameters[np.arange(self.env_num), action]
         return action, action_parameters, all_action_parameters
 
     def _zero_index_gradients(self, grad, batch_action_indices, inplace=True):
@@ -393,10 +400,13 @@ class PDQNAgent(Agent):
 
     def step(self, state, action, reward, next_state, next_action, terminal, time_steps=1):
         act, all_action_parameters = action
-        self._step += 1
+        next_act, next_all_action_parameters = next_action
+        self._step += self.env_num
 
         # self._add_sample(state, np.concatenate((all_actions.data, all_action_parameters.data)).ravel(), reward, next_state, terminal)
-        self._add_sample(state, np.concatenate(([act],all_action_parameters)).ravel(), reward, next_state, np.concatenate(([next_action[0]],next_action[1])).ravel(), terminal=terminal)
+        for i in range(self.env_num):
+            self._add_sample(state[i], np.concatenate(([act[i]],all_action_parameters[i])).ravel(), reward[i], next_state[i],
+                             np.concatenate(([next_act[i]], next_all_action_parameters[i])).ravel(), terminal=terminal[i])
         if self._step >= self.batch_size and self._step >= self.initial_memory_threshold:
             Q_loss = self._optimize_td_loss()
             self.updates += 1
@@ -415,18 +425,6 @@ class PDQNAgent(Agent):
         states, actions, rewards, next_states, terminals = self.replay_memory.sample(self.batch_size, random_machine=self.np_random)
         rewards = rewards.squeeze()
         terminals = terminals.squeeze()
-        # states = torch.from_numpy(states).to(self.device)
-        # actions_combined = torch.from_numpy(actions).to(self.device)  # make sure to separate actions and parameters
-        # actions = actions_combined[:, 0].long()
-        # action_parameters = actions_combined[:, 1:]
-        # rewards = torch.from_numpy(rewards).to(self.device).squeeze()
-        # next_states = torch.from_numpy(next_states).to(self.device)
-        # terminals = torch.from_numpy(terminals).to(self.device).squeeze()
-        # print("STATES", states.shape)
-        # print("ACTIONS", actions.shape)
-        # print("REWARDS", rewards.shape)
-        # print("NEXT STATES", next_states.shape)
-        # print("TERMINALS", terminals.shape)
         action_parameters = actions[:, 1:]
         actions = actions[:, 0].long()
 
@@ -444,7 +442,6 @@ class PDQNAgent(Agent):
         q_values = self.actor(states, action_parameters)
         y_predicted = q_values.gather(1, actions.view(-1, 1)).squeeze()
         y_expected = target
-        # print(y_predicted.shape, y_expected.shape)
         loss_Q = self.loss_func(y_predicted, y_expected)
 
         self.actor_optimiser.zero_grad(set_to_none=False)

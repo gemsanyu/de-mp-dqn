@@ -21,6 +21,6 @@ class OrnsteinUhlenbeckActionNoise(object):
 
     def sample(self):
         dx = self.theta * (self.mu - self.X)
-        dx = dx + self.sigma * self.random.randn(len(self.X))
+        dx = dx + self.sigma * self.random.randn(*self.X.shape)
         self.X = self.X + dx
         return self.X

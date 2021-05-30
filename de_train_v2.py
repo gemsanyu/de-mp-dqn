@@ -79,43 +79,43 @@ class DEEnv(gym.Env):
         self.random_idx = None
 
         # training function list
-        func_choice = [unimodal.F1, unimodal.F2, unimodal.F5, basic_multimodal.F6, basic_multimodal.F8,
-                            basic_multimodal.F10, basic_multimodal.F11, basic_multimodal.F12, expanded_multimodal.F13,
-                            expanded_multimodal.F14, f15.F15, f19.F19, f20.F20, f21.F21, f22.F22, f24.F24]
-        dim_choice = [10, 30]
-        self.function_list = [func(dim) for func in func_choice for dim in dim_choice]
-        self.num_function = len(self.function_list)
-        self.randomized_func_idx = np.arange(len(self.function_list))
-        self.current_function_idx = -1
+        # func_choice = [unimodal.F1, unimodal.F2, unimodal.F5, basic_multimodal.F6, basic_multimodal.F8,
+        #                     basic_multimodal.F10, basic_multimodal.F11, basic_multimodal.F12, expanded_multimodal.F13,
+        #                     expanded_multimodal.F14, f15.F15, f19.F19, f20.F20, f21.F21, f22.F22, f24.F24]
+        # dim_choice = [10, 30]
+        # self.function_list = [func(dim) for func in func_choice for dim in dim_choice]
+        # self.num_function = len(self.function_list)
+        # self.randomized_func_idx = np.random.choice(self.num_function, self.num_function, replace=False)
+        # self.current_function_idx = -1
 
         # save optimal value of each function
-        self.func_best_value_list = []
-        for func in self.function_list:
-            opti = func.get_optimal_solutions()
-            solution = np.copy(opti[0].phenome)
-            best_value = func.objective_function(solution)
-            self.func_best_value_list += [best_value]
+        # self.func_best_value_list = []
+        # for func in self.function_list:
+        #     opti = func.get_optimal_solutions()
+        #     solution = np.copy(opti[0].phenome)
+        #     best_value = func.objective_function(solution)
+        #     self.func_best_value_list += [best_value]
 
         # save min
 
     def reset_(self, func=None, is_test=False):
 
         # set function and its best values
-        if not is_test:
-            self.current_function_idx += 1
-            if self.current_function_idx == self.num_function:
-                self.current_function_idx = 0
-                self.randomized_func_idx = np.random.choice(self.num_function, self.num_function, replace=False)
-            self.func = self.function_list[self.randomized_func_idx[self.current_function_idx]]
-            self.real_best_value = self.func_best_value_list[self.randomized_func_idx[self.current_function_idx]]
-        else:
-            if func is None:
-                print("ERROR, reset_: new_func cannot")
-                return None, None
-            self.func = func
-            opti = func.get_optimal_solutions()
-            solution = np.copy(opti[0].phenome)
-            self.real_best_value = func.objective_function(solution)
+        # if not is_test:
+        #     self.current_function_idx += 1
+        #     if self.current_function_idx == self.num_function:
+        #         self.current_function_idx = 0
+        #         self.randomized_func_idx = np.random.choice(self.num_function, self.num_function, replace=False)
+        #     self.func = self.function_list[self.randomized_func_idx[self.current_function_idx]]
+        #     self.real_best_value = self.func_best_value_list[self.randomized_func_idx[self.current_function_idx]]
+        # else:
+        if func is None:
+            print("ERROR, reset_: new_func cannot be None if test")
+            return None, None
+        self.func = func
+        opti = func.get_optimal_solutions()
+        solution = np.copy(opti[0].phenome)
+        self.real_best_value = func.objective_function(solution)
 
         # set bounds
         self.min_bounds = np.array(self.func.min_bounds)
@@ -205,7 +205,7 @@ class DEEnv(gym.Env):
         is_terminal = self.n_fe >= self.max_fe
 
         # feature, reward, is_terminal flag, info
-        print(self.n_fe, opr, scale, self.real_best_value, self.current_best_value, reward)
+        # print(self.n_fe, opr, scale, self.real_best_value, self.current_best_value, reward)
         return (feature, None), reward, is_terminal, None
 
     def get_reward(self, i, new_value):
