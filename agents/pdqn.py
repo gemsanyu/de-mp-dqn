@@ -413,6 +413,8 @@ class PDQNAgent(Agent):
             return None
         # Sample a batch from replay memory
         states, actions, rewards, next_states, terminals = self.replay_memory.sample(self.batch_size, random_machine=self.np_random)
+        rewards = rewards.squeeze()
+        terminals = terminals.squeeze()
         # states = torch.from_numpy(states).to(self.device)
         # actions_combined = torch.from_numpy(actions).to(self.device)  # make sure to separate actions and parameters
         # actions = actions_combined[:, 0].long()
@@ -420,6 +422,11 @@ class PDQNAgent(Agent):
         # rewards = torch.from_numpy(rewards).to(self.device).squeeze()
         # next_states = torch.from_numpy(next_states).to(self.device)
         # terminals = torch.from_numpy(terminals).to(self.device).squeeze()
+        # print("STATES", states.shape)
+        # print("ACTIONS", actions.shape)
+        # print("REWARDS", rewards.shape)
+        # print("NEXT STATES", next_states.shape)
+        # print("TERMINALS", terminals.shape)
         action_parameters = actions[:, 1:]
         actions = actions[:, 0].long()
 
@@ -437,6 +444,7 @@ class PDQNAgent(Agent):
         q_values = self.actor(states, action_parameters)
         y_predicted = q_values.gather(1, actions.view(-1, 1)).squeeze()
         y_expected = target
+        # print(y_predicted.shape, y_expected.shape)
         loss_Q = self.loss_func(y_predicted, y_expected)
 
         self.actor_optimiser.zero_grad(set_to_none=False)
