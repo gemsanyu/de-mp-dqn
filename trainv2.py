@@ -246,7 +246,7 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
 
         # recap rewards, q_loss and network weights of each environments
         for env_idx in range(env_num):
-            env_episode = current_episode-(env_num-env_idx)
+            env_episode = current_episode-(env_num-env_idx) + 1
             writer.add_scalar('total episode rewards', env_rewards[env_idx], env_episode)
 
         # recap average Q loss of 5 episodes
@@ -254,13 +254,15 @@ def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradie
 
         # recap average episode per stage (1 stage = 1 full function cycle/32 functions)
         for env_idx in range(env_num):
-            env_episode = current_episode-(env_num-env_idx)
-            if env_episode > 0 and env_episode%num_function==0:
+            env_episode = current_episode-(env_num-env_idx) + 1
+            print(env_episode)
+            if env_episode > 0 and env_episode % num_function==0:
                 average_stage_rewards = total_rewards/num_function
-                writer.add_scalar("Average Stage Rewards", average_stage_rewards, int(env_episode/num_function))
+                current_stage = int(env_episode/num_function)
+                writer.add_scalar("Average Stage Rewards", average_stage_rewards, current_stage)
                 if average_stage_rewards > best_average_stage_rewards:
                     best_average_stage_rewards = average_stage_rewards
-                    agent.save_models(os.path.join(save_dir, str(i)))
+                    agent.save_models(os.path.join(save_dir, str(env_episode)))
                 total_rewards = 0
 
             total_rewards += env_rewards[env_idx]
