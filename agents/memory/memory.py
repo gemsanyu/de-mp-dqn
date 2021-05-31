@@ -4,7 +4,9 @@ Source: https://github.com/openai/baselines/blob/master/baselines/ddpg/ddpg.py
 import numpy as np
 import torch
 
+# DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 DEVICE = torch.device("cpu")
+# DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 class RingBuffer(object):
     def __init__(self, maxlen, shape, dtype=torch.float32):

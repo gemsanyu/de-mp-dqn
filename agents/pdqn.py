@@ -415,8 +415,8 @@ class PDQNAgent(Agent):
 
     def _add_sample(self, state, action, reward, next_state, next_action, terminal):
         assert len(action) == 1 + self.action_parameter_size
-        self.replay_memory.append(torch.tensor(state), torch.tensor(action), torch.tensor(reward),
-                                  torch.tensor(next_state), terminal=torch.tensor(terminal))
+        self.replay_memory.append(torch.tensor(state, device=DEVICE), torch.tensor(action, device=DEVICE), torch.tensor(reward, device=DEVICE),
+                                  torch.tensor(next_state, device=DEVICE), terminal=torch.tensor(terminal, device=DEVICE))
 
     def _optimize_td_loss(self):
         if self._step < self.batch_size or self._step < self.initial_memory_threshold:
