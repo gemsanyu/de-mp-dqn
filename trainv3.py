@@ -78,7 +78,7 @@ def evaluate(env, agent, episodes=1000):
 @click.option('--render-freq', default=100, help='How often to render / save frames of an episode.', type=int)
 @click.option('--save-frames', default=False, help="Save render frames from the environment. Incompatible with visualise.", type=bool)
 @click.option('--visualise', default=False, help="Render game states. Incompatible with save-frames.", type=bool)
-@click.option('--title', default="MPDQNMulti", help="Prefix of output files", type=str)
+@click.option('--title', default="MPDQNv3Mul", help="Prefix of output files", type=str)
 @click.option('--reward-strategy', default="R1", help="Prefix of output files", type=str)
 @click.option('--env-num', default=5, help="Number of environment solved per step", type=int)
 def run(seed, episodes, evaluation_episodes, batch_size, gamma, inverting_gradients, initial_memory_threshold,
