@@ -329,15 +329,15 @@ class DEEnv(gym.Env):
     def compute_reward(self):
         if self.reward_strategy == "R1":  # reward depends on performance without penalty
             # print(self.F1[self.i], self.copy_F[self.i])
-            reward = max((self.F1[self.i] - self.copy_F[self.i])/(self.copy_F[self.i]-self.best_value), 0)
+            reward = max((self.copy_F[self.i] - self.F1[self.i])/(self.F1[self.i]-self.best_value), 0)
         elif self.reward_strategy == "R2":    # with penalty
-            reward = (self.F1[self.i] - self.copy_F[self.i])/(self.copy_F[self.i]-self.best_value)
+            reward = (self.copy_F[self.i] - self.F1[self.i])/(self.F1[self.i]-self.best_value)
         else:
             if self.reward_strategy == "R3":  # constant reward
                 reward = 0
             else:   # incorporate penalty reward (R4)
                 reward = -1
-            if self.F1[self.i] <= self.copy_F[self.i]:
+            if self.F1[self.i] < self.copy_F[self.i]:
                 reward = 1
                 if self.F1[self.i] < self.best_so_far:
                     reward = 10
